@@ -30,10 +30,12 @@ function applyFilter(params, column, values, allowed) {
 
 // filters: { neighborhoods, days, activities, audiences, onlyAvailable }
 export async function fetchSessions(env, filters = {}) {
-  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
+  const missing = ["SUPABASE_URL", "SUPABASE_ANON_KEY"].filter((k) => !env[k]);
+  if (missing.length > 0) {
     throw new Error(
-      "Supabase is not configured. Set SUPABASE_URL in wrangler.toml and " +
-        "SUPABASE_ANON_KEY with: npx wrangler secret put SUPABASE_ANON_KEY",
+      `Missing: ${missing.join(" and ")}. Add each as a Secret in the ` +
+        `Cloudflare dashboard (Settings -> Variables and Secrets). A plain-text ` +
+        `Variable will not survive a deploy.`,
     );
   }
 
