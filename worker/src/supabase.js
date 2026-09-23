@@ -30,14 +30,10 @@ function applyFilter(params, column, values, allowed) {
 
 // filters: { neighborhoods, days, activities, audiences, onlyAvailable }
 export async function fetchSessions(env, filters = {}) {
-  // Supabase renamed the anon key to the publishable key; accept either.
-  // Never the secret key — that one bypasses RLS.
-  const key = env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY;
-  if (!env.SUPABASE_URL || !key) {
-    const missing = [
-      !env.SUPABASE_URL && "SUPABASE_URL",
-      !key && "SUPABASE_PUBLISHABLE_KEY",
-    ].filter(Boolean);
+  // The publishable key, never SUPABASE_SECRET_KEY — the secret key bypasses
+  // RLS, which would void the read-only policies in 0001_init.sql.
+  const missing = ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"].filter((k) => !env[k]);
+  if (missing.length > 0) {
     throw new Error(
       `Missing: ${missing.join(" and ")}. Add as a Secret in the Cloudflare ` +
         `dashboard (Settings -> Variables and Secrets).`,
@@ -57,8 +53,8 @@ export async function fetchSessions(env, filters = {}) {
   const url = `${env.SUPABASE_URL.replace(/\/$/, "")}/rest/v1/sessions_public?${params}`;
   const res = await fetch(url, {
     headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
+      apikey: env.SUPABASE_PUBLISHABLE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_PUBLISHABLE_KEY}`,
     },
   });
 
