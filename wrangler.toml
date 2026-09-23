@@ -12,9 +12,10 @@ directory = "./dist"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*"]
 
-[vars]
-SUPABASE_URL = ""
-
-# SUPABASE_ANON_KEY and NVIDIA_API_KEY are secrets, not vars — set them with:
-#   npx wrangler secret put SUPABASE_ANON_KEY
-#   npx wrangler secret put NVIDIA_API_KEY
+# No [vars] block on purpose. A plain-text var declared here replaces whatever
+# the dashboard holds on every deploy, so listing SUPABASE_URL was silently
+# resetting it to "" each time. Secrets are not touched by a deploy, so all
+# three live there instead:
+#   SUPABASE_URL, SUPABASE_ANON_KEY, NVIDIA_API_KEY
+# Set via the dashboard (Settings -> Variables and Secrets -> Secret), or:
+#   npx wrangler secret put SUPABASE_URL
