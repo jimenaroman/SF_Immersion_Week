@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MVP Build Flow v3</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #000;
+    min-height: 100vh;
+    padding: 48px 24px 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    margin-bottom: 40px;
+    text-align: left;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  header h1 {
+    font-size: 11px;
+    font-weight: 400;
+    color: #666;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  header p {
+    font-size: 15px;
+    font-weight: 600;
+    color: #000;
+  }
+
+  header .stack {
+    font-size: 11px;
+    color: #888;
+    margin-top: 6px;
+    font-weight: 400;
+  }
+
+  .uml-start {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #000;
+    flex-shrink: 0;
+  }
+
+  .uml-end {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2.5px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .uml-end-inner {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #000;
+  }
+
+  .flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 520px;
+    gap: 0;
+  }
+
+  .step {
+    width: 100%;
+    background: #fff;
+    border: 1.5px solid #000;
+    border-radius: 0;
+    padding: 10px 16px;
+    position: relative;
+  }
+
+  .step.done {
+    background: #fafafa;
+    border-color: #bbb;
+  }
+
+  .step.done .step-label,
+  .step.done .step-num {
+    color: #aaa;
+  }
+
+  .step.done .step-desc {
+    color: #bbb;
+  }
+
+  .step.done::after {
+    content: '✓';
+    position: absolute;
+    right: 14px;
+    top: 10px;
+    font-size: 11px;
+    color: #aaa;
+  }
+
+  .step-inner {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .step-num {
+    font-size: 10px;
+    font-weight: 400;
+    color: #999;
+    flex-shrink: 0;
+    min-width: 20px;
+  }
+
+  .step-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #000;
+    line-height: 1.4;
+  }
+
+  .step-desc {
+    font-size: 11.5px;
+    color: #555;
+    line-height: 1.5;
+    margin-top: 3px;
+    padding-left: 30px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-left: 6px;
+    vertical-align: middle;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .tag-worker { background: #fff3e0; color: #b45309; }
+  .tag-nvidia { background: #f1f8e9; color: #4d7c0f; }
+  .tag-data   { background: #f3e8ff; color: #7e22ce; }
+
+  .connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 100%;
+  }
+
+  .connector svg {
+    overflow: visible;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SF Leisure Discovery — Workshop MVP</h1>
+  <p>Activity diagram · 9 steps</p>
+  <p class="stack">Stack: React · Cloudflare Workers · Supabase · NVIDIA API</p>
+</header>
+
+<div class="flow">
+
+  <div class="uml-start"></div>
+
+  <div class="connector">
+    <svg width="2" height="18"><line x1="1" y1="0" x2="1" y2="18" stroke="#000" stroke-width="1.5"/></svg>
+  </div>
+
+  <!-- Step 1 — DONE -->
+  <div class="step done">
+    <div class="step-inner">
+      <span class="step-num">01</span>
+      <span class="step-label">Problem statement + constraints</span>
+    </div>
+    <p class="step-desc">Problem brief · success criteria · out-of-scope rules · stack locked</p>
+  </div>
+
+  <div class="connector">
+    <svg width="520" height="38" style="display:block">
+      <line x1="260" y1="0" x2="260" y2="22" stroke="#000" stroke-width="1.5"/>
+      <text x="260" y="16" text-anchor="middle" font-size="10.5" font-family="Inter,sans-serif" font-style="italic" fill="#333">React · Cloudflare Workers · Supabase · NVIDIA API</text>
+      <polygon points="255,26 265,26 260,36" fill="#000"/>
+    </svg>
+  </div>
+
+  <!-- Step 2 — DONE -->
+  <div class="step done">
+    <div class="step-inner">
+      <span class="step-num">02</span>
+      <span class="step-label">Scaffold React app</span>
+    </div>
+    <p class="step-desc">Vite + React repo · wrangler.toml configured · folder structure in place</p>
+  </div>
+
+  <div class="connector">
+    <svg width="520" height="38" style="display:block">
+      <line x1="260" y1="0" x2="260" y2="22" stroke="#000" stroke-width="1.5"/>
+      <text x="260" y="16" text-anchor="middle" font-size="10.5" font-family="Inter,sans-serif" font-style="italic" fill="#333">scaffolded repo + wrangler.toml ready</text>
+      <polygon points="255,26 265,26 260,36" fill="#000"/>
+    </svg>
+  </div>
+
+  <!-- Step 3 — DONE -->
+  <div class="step done">
+    <div class="step-inner">
+      <span class="step-num">03</span>
+      <span class="step-label">Load session data into Supabase <span class="tag tag-data">Supabase</span></span>
+    </div>
+    <p class="step-desc">29 sessions across 12 SF businesses · maxed_out generated, never stored · RLS public read</p>
+  </div>
+
+  <div class="connector">
+    <svg width="520" height="38" style="display:block">
+      <line x1="260" y1="0" x2="260" y2="22" stroke="#000" stroke-width="1.5"/>
+      <text x="260" y="16" text-anchor="middle" font-size="10.5" font-family="Inter,sans-serif" font-style="italic" fill="#333">sessions_public view · 12 / 29 / 4</text>
+      <polygon points="255,26 265,26 260,36" fill="#000"/>
+    </svg>
+  </div>
+
+  <!-- Step 4 — DONE -->
+  <div class="step done">
+    <div class="step-inner">
+      <span class="step-num">04</span>
+      <span class="step-label">Build Cloudflare Worker API <span class="tag tag-worker">Worker</span></span>
+    </div>
+    <p class="step-desc">/api/sessions + /api/meta over Supabase PostgREST · filter values validated against the schema</p>
+  </div>
+
+  <div class="connector">
+    <svg width="520" height="38" style="display:block">
+      <line x1="260" y1="0" x2="260" y2="22" stroke="#000" stroke-width="1.5"/>
+      <text x="260" y="16" text-anchor="middle" font-size="10.5" font-family="Inter,sans-serif" font-style="italic" fill="#333">Worker deployed · endpoints responding</text>
+      <polygon points="255,26 265,26 260,36" fill="#000"/>
+    </svg>
+  </div>
+
+  <!-- Step 6 — DONE (built ahead of 5) -->
+  <div class="step done">
+    <div class="step-inner">
+      <span class="step-num">06</span>
+      <span class="step-label">Build filter + browse UI</span>
+    </div>
+    <p class="step-desc">Filter bar · session cards · capacity meters · Full badges</p>
+  </div>
+
+  <div class="connector">
+    <svg width="520" height="38" style="display:block">
+      <line x1="260" y1="0" x2="260" y2="22" stroke="#000" stroke-width="1.5"/>
+      <text x="260" y="16" text-anchor="middle" font-size="10.5" font-family="Inter,sans-serif" font-style="italic" fill="#333">UI components + filter state shape</text>
+      <polygon points="255,26 265,26 260,36" fill="#000"/>
+    </svg>
+  </div>
+
+  <!-- Step 7 — DONE -->
+  <div class="step done">
+    <div class="step-inner">
+      <span class="step-num">07</span>
+      <span class="step-label">Wire frontend to Worker</span>
+    </div>
+    <p class="step-desc">React fetches /api/sessions · filter selections trigger live requests · results update dynamically</p>
+  </div>
+
+  <div class="connector">
+    <svg width="520" height="38" style="display:block">
+      <line x1="260" y1="0" x2="260" y2="22" stroke="#000" stroke-width="1.5"/>
+      <text x="260" y="16" text-anchor="middle" font-size="10.5" font-family="Inter,sans-serif" font-style="italic" fill="#333">browsable app, filters live against Supabase</text>
+      <polygon points="255,26 265,26 260,36" fill="#000"/>
+    </svg>
+  </div>
+
+  <!-- Step 5 — REMAINING -->
+  <div class="step">
+    <div class="step-inner">
+      <span class="step-num">05</span>
+      <span class="step-label">Wire NVIDIA API into the Worker <span class="tag tag-nvidia">NVIDIA</span></span>
+    </div>
+    <p class="step-desc">Worker calls NVIDIA server-side · turns a typed request into a structured filter · Postgres decides what matches · NVIDIA_API_KEY stored as a Worker secret</p>
+  </div>
+
+  <div class="connector">
+    <svg width="520" height="38" style="display:block">
+      <line x1="260" y1="0" x2="260" y2="22" stroke="#000" stroke-width="1.5"/>
+      <text x="260" y="16" text-anchor="middle" font-size="10.5" font-family="Inter,sans-serif" font-style="italic" fill="#333">NVIDIA-powered Worker returning filtered sessions</text>
+      <polygon points="255,26 265,26 260,36" fill="#000"/>
+    </svg>
+  </div>
+
+  <!-- Step 8 — REMAINING -->
+  <div class="step">
+    <div class="step-inner">
+      <span class="step-num">08</span>
+      <span class="step-label">Deploy on Cloudflare Workers <span class="tag tag-worker">Worker</span></span>
+    </div>
+    <p class="step-desc">Static assets + API in one Worker · auto-deploy on push to main · SUPABASE_URL, SUPABASE_ANON_KEY and NVIDIA_API_KEY set</p>
+  </div>
+
+  <div class="connector">
+    <svg width="520" height="38" style="display:block">
+      <line x1="260" y1="0" x2="260" y2="22" stroke="#000" stroke-width="1.5"/>
+      <text x="260" y="16" text-anchor="middle" font-size="10.5" font-family="Inter,sans-serif" font-style="italic" fill="#333">live public URL</text>
+      <polygon points="255,26 265,26 260,36" fill="#000"/>
+    </svg>
+  </div>
+
+  <!-- Step 9 — REMAINING -->
+  <div class="step">
+    <div class="step-inner">
+      <span class="step-num">09</span>
+      <span class="step-label">Working demo — shareable URL</span>
+    </div>
+    <p class="step-desc">SF leisure discovery app · filterable · NVIDIA-powered · real data in Supabase · ready for workshop audience</p>
+  </div>
+
+  <div class="connector">
+    <svg width="2" height="18"><line x1="1" y1="0" x2="1" y2="18" stroke="#000" stroke-width="1.5"/></svg>
+  </div>
+
+  <div class="uml-end"><div class="uml-end-inner"></div></div>
+
+</div>
+
+</body>
+</html>
