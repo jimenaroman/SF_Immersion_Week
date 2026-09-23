@@ -30,12 +30,17 @@ function applyFilter(params, column, values, allowed) {
 
 // filters: { neighborhoods, days, activities, audiences, onlyAvailable }
 export async function fetchSessions(env, filters = {}) {
-  const missing = ["SUPABASE_URL", "SUPABASE_ANON_KEY"].filter((k) => !env[k]);
-  if (missing.length > 0) {
+  // Supabase renamed the anon key to the publishable key; accept either.
+  // Never the secret key — that one bypasses RLS.
+  const key = env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY;
+  if (!env.SUPABASE_URL || !key) {
+    const missing = [
+      !env.SUPABASE_URL && "SUPABASE_URL",
+      !key && "SUPABASE_PUBLISHABLE_KEY",
+    ].filter(Boolean);
     throw new Error(
-      `Missing: ${missing.join(" and ")}. Add each as a Secret in the ` +
-        `Cloudflare dashboard (Settings -> Variables and Secrets). A plain-text ` +
-        `Variable will not survive a deploy.`,
+      `Missing: ${missing.join(" and ")}. Add as a Secret in the Cloudflare ` +
+        `dashboard (Settings -> Variables and Secrets).`,
     );
   }
 
@@ -52,8 +57,8 @@ export async function fetchSessions(env, filters = {}) {
   const url = `${env.SUPABASE_URL.replace(/\/$/, "")}/rest/v1/sessions_public?${params}`;
   const res = await fetch(url, {
     headers: {
-      apikey: env.SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${env.SUPABASE_ANON_KEY}`,
+      apikey: key,
+      Authorization: `Bearer ${key}`,
     },
   });
 
