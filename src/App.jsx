@@ -1,122 +1,164 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+const FILTERS = [
+  { key: "neighborhood", label: "Neighborhood", from: "neighborhoods" },
+  { key: "day", label: "Day", from: "days" },
+  { key: "activity", label: "Activity", from: "activities" },
+  { key: "audience", label: "Audience", from: "audiences" },
+];
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+const EMPTY = { neighborhood: "", day: "", activity: "", audience: "" };
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+function titleCase(value) {
+  const spaced = value.replace(/_/g, " ");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
-export default App
+function clockTime(value) {
+  const [h, m] = value.split(":");
+  const hour = Number(h);
+  const suffix = hour < 12 ? "am" : "pm";
+  return `${((hour + 11) % 12) + 1}:${m}${suffix}`;
+}
+
+export default function App() {
+  const [meta, setMeta] = useState(null);
+  const [sessions, setSessions] = useState([]);
+  const [filters, setFilters] = useState(EMPTY);
+  const [availableOnly, setAvailableOnly] = useState(false);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/meta")
+      .then((r) => r.json())
+      .then((d) => (d.error ? setError(d.error) : setMeta(d)))
+      .catch((e) => setError(e.message));
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) {
+      if (value) params.set(key, value);
+    }
+    if (availableOnly) params.set("available", "true");
+
+    setLoading(true);
+    fetch(`/api/sessions?${params}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) setError(d.error);
+        else {
+          setSessions(d.sessions);
+          setError(null);
+        }
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [filters, availableOnly]);
+
+  const active = Object.values(filters).some(Boolean) || availableOnly;
+
+  return (
+    <div className="app">
+      <header className="masthead">
+        <h1>Things to do in San Francisco</h1>
+        <p>Small-business sessions around the city — browse by neighborhood, day or vibe.</p>
+      </header>
+
+      <div className="filters">
+        {FILTERS.map(({ key, label, from }) => (
+          <div className="field" key={key}>
+            <label htmlFor={key}>{label}</label>
+            <select
+              id={key}
+              value={filters[key]}
+              onChange={(e) => setFilters({ ...filters, [key]: e.target.value })}
+            >
+              <option value="">All</option>
+              {(meta?.[from] ?? []).map((option) => (
+                <option key={option} value={option}>
+                  {titleCase(option)}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
+
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={availableOnly}
+            onChange={(e) => setAvailableOnly(e.target.checked)}
+          />
+          Spots left only
+        </label>
+
+        {active && (
+          <button
+            className="reset"
+            onClick={() => {
+              setFilters(EMPTY);
+              setAvailableOnly(false);
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {error ? (
+        <div className="notice bad">
+          <strong>Couldn&apos;t load sessions.</strong>
+          <p>{error}</p>
+        </div>
+      ) : (
+        <>
+          <p className="count">
+            {loading ? "Loading…" : `${sessions.length} session${sessions.length === 1 ? "" : "s"}`}
+          </p>
+
+          {!loading && sessions.length === 0 ? (
+            <div className="notice">No sessions match those filters. Try widening them.</div>
+          ) : (
+            <div className="grid">
+              {sessions.map((s) => (
+                <article className="card" key={s.id}>
+                  <div className="card-top">
+                    <div>
+                      <h2>{s.business_name}</h2>
+                      <div className="hood">{s.neighborhood}</div>
+                    </div>
+                    {s.maxed_out && <span className="badge">Full</span>}
+                  </div>
+
+                  <div className="when">
+                    {s.day} · {clockTime(s.time)}
+                  </div>
+
+                  <div className="tags">
+                    <span className="tag">{titleCase(s.activity_label)}</span>
+                    <span className="tag plain">{titleCase(s.audience_age)}</span>
+                  </div>
+
+                  <div>
+                    <div className="seats">
+                      <span>
+                        {s.people_attending} of {s.capacity} spots taken
+                      </span>
+                      <span>{s.maxed_out ? "Full" : `${s.capacity - s.people_attending} left`}</span>
+                    </div>
+                    <div className={`meter${s.maxed_out ? " full" : ""}`}>
+                      <span style={{ width: `${(s.people_attending / s.capacity) * 100}%` }} />
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
