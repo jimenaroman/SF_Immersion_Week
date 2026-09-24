@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchAllSessions } from "./supabase.js";
+import SessionArt from "./SessionArt.jsx";
+import SessionModal from "./SessionModal.jsx";
 import "./App.css";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -38,6 +40,7 @@ export default function App() {
   const [openSuggest, setOpenSuggest] = useState(false);
   const [sort, setSort] = useState("spots");
   const [theme, setTheme] = useTheme();
+  const [open, setOpen] = useState(null);
   const searchBox = useRef(null);
 
   useEffect(() => {
@@ -257,10 +260,24 @@ export default function App() {
             <div className="notice">Nothing matches that. Try clearing a filter.</div>
           ) : (
             <div className="grid">
-              {shown.map((s) => {
+              {shown.map((s, i) => {
                 const left = s.capacity - s.people_attending;
                 return (
-                  <article className="card" key={s.id}>
+                  <article
+                    className="card"
+                    key={s.id}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${s.business_name}, ${s.day} ${clockTime(s.time)}`}
+                    onClick={() => setOpen(s)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setOpen(s);
+                      }
+                    }}
+                  >
+                    <SessionArt activity={s.activity_label} seed={i} />
                     <div className="card-top">
                       <div>
                         <h2>{s.business_name}</h2>
@@ -296,6 +313,16 @@ export default function App() {
             </div>
           )}
         </>
+      )}
+
+      {open && (
+        <SessionModal
+          session={open}
+          index={shown.findIndex((s) => s.id === open.id)}
+          label={label}
+          clockTime={clockTime}
+          onClose={() => setOpen(null)}
+        />
       )}
     </div>
   );
