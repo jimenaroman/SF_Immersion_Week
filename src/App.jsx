@@ -14,9 +14,22 @@ function label(value) {
 }
 
 function clockTime(value) {
-  const [h, m] = value.split(":");
+  const [h, m] = String(value ?? "").split(":");
   const hour = Number(h);
-  return `${((hour + 11) % 12) + 1}:${m}${hour < 12 ? "am" : "pm"}`;
+  if (!Number.isFinite(hour) || m === undefined) return "—";
+  const h24 = hour % 24;
+  return `${h24 % 12 === 0 ? 12 : h24 % 12}:${m.padStart(2, "0")}${h24 < 12 ? "am" : "pm"}`;
+}
+
+// A session can be over-booked: the schema caps neither attendance at capacity
+// nor the ratio, so both are clamped before they reach a width or a count.
+export function fillRatio(s) {
+  if (!(s.capacity > 0)) return 0;
+  return Math.min(1, Math.max(0, s.people_attending / s.capacity));
+}
+
+export function spotsLeft(s) {
+  return Math.max(0, (s.capacity ?? 0) - (s.people_attending ?? 0));
 }
 
 function useTheme() {
@@ -69,7 +82,7 @@ export default function App() {
   }, []);
 
   const options = useMemo(() => {
-    const uniq = (fn) => [...new Set(all.map(fn))].sort();
+    const uniq = (fn) => [...new Set(all.map(fn).filter(Boolean))].sort();
     return {
       neighborhood: uniq((s) => s.neighborhood),
       day: DAYS.filter((d) => all.some((s) => s.day === d)),
@@ -85,9 +98,12 @@ export default function App() {
     const pool = [
       ...options.neighborhood.map((v) => ({ kind: "Neighborhood", value: v })),
       ...options.activity.map((v) => ({ kind: "Activity", value: v })),
-      ...[...new Set(all.map((s) => s.business_name))].map((v) => ({ kind: "Venue", value: v })),
+      ...[...new Set(all.map((s) => s.business_name).filter(Boolean))].map((v) => ({
+        kind: "Venue",
+        value: v,
+      })),
     ];
-    return pool.filter((o) => o.value.toLowerCase().replace(/_/g, " ").includes(q)).slice(0, 6);
+    return pool.filter((o) => String(o.value).toLowerCase().replace(/_/g, " ").includes(q)).slice(0, 6);
   }, [query, options, all]);
 
   const shown = useMemo(() => {
@@ -98,7 +114,9 @@ export default function App() {
       if (filters.activity && s.activity_label !== filters.activity) return false;
       if (filters.audience && s.audience_age !== filters.audience) return false;
       if (q) {
-        const hay = `${s.business_name} ${s.neighborhood} ${s.activity_label} ${s.audience_age} ${s.day}`
+        const hay = [s.business_name, s.neighborhood, s.activity_label, s.audience_age, s.day]
+          .filter(Boolean)
+          .join(" ")
           .toLowerCase()
           .replace(/_/g, " ");
         if (!hay.includes(q)) return false;
@@ -106,25 +124,25 @@ export default function App() {
       return true;
     });
 
-    if (tab === "open") rows = rows.filter((s) => s.people_attending / s.capacity < 0.7);
+    if (tab === "open") rows = rows.filter((s) => fillRatio(s) < 0.7);
 
     const open = (s) => s.capacity - s.people_attending;
     if (sort === "spots") rows = [...rows].sort((a, b) => open(b) - open(a));
-    else rows = [...rows].sort((a, b) => a.day_index - b.day_index || a.time.localeCompare(b.time));
+    else rows = [...rows].sort((a, b) => (a.day_index ?? 99) - (b.day_index ?? 99) || String(a.time ?? "").localeCompare(String(b.time ?? "")));
     return rows;
   }, [all, filters, query, sort, tab]);
 
   const stats = useMemo(() => {
-    const seats = all.reduce((n, s) => n + s.capacity, 0);
-    const taken = all.reduce((n, s) => n + s.people_attending, 0);
+    const seats = all.reduce((n, s) => n + Math.max(0, s.capacity ?? 0), 0);
+    const taken = all.reduce((n, s) => n + Math.min(s.people_attending ?? 0, s.capacity ?? 0), 0);
     return {
-      open: seats - taken,
+      open: Math.max(0, seats - taken),
       sessions: all.length,
       venues: new Set(all.map((s) => s.business_name)).size,
     };
   }, [all]);
 
-  const active = Object.values(filters).some(Boolean) || query;
+  const active = Object.values(filters).some(Boolean) || query || sort !== "spots" || tab !== "discover";
 
   function pickSuggestion(s) {
     if (s.kind === "Neighborhood") setFilters({ ...filters, neighborhood: s.value });
@@ -248,6 +266,8 @@ export default function App() {
             onClick={() => {
               setFilters(EMPTY);
               setQuery("");
+              setSort("spots");
+              setTab("discover");
             }}
           >
             Clear
@@ -274,11 +294,11 @@ export default function App() {
           ) : (
             <div className="grid">
               {shown.map((s, i) => {
-                const left = s.capacity - s.people_attending;
+                const left = spotsLeft(s);
                 return (
                   <article
                     className="card"
-                    key={s.id}
+                    key={s.id ?? `${s.business_name}-${s.day}-${s.time}-${i}`}
                     tabIndex={0}
                     role="button"
                     aria-label={`${s.business_name}, ${s.day} ${clockTime(s.time)}`}
@@ -317,7 +337,7 @@ export default function App() {
                         </span>
                       </div>
                       <div className={`meter${s.maxed_out ? " full" : ""}`}>
-                        <span style={{ width: `${(s.people_attending / s.capacity) * 100}%` }} />
+                        <span style={{ width: `${fillRatio(s) * 100}%` }} />
                       </div>
                     </div>
                   </article>

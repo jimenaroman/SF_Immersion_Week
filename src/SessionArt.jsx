@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 // Generated per activity type rather than fetched. A stock photo service is
 // one more thing that can fail live, and a stray landscape photo on a pottery
 // class reads worse than deliberate abstract art. Swap for real venue photos
@@ -14,18 +16,21 @@ const ART = {
   family_playtime: { hue: 48, shapes: [[22, 46, 22], [50, 70, 16], [78, 40, 19]] },
 };
 
+let uid = 0;
+
 export default function SessionArt({ activity, seed = 0 }) {
+  const gid = useMemo(() => `art${uid++}`, []);
   const { hue, shapes } = ART[activity] ?? ART.community_meetup;
 
   return (
     <svg className="art" viewBox="0 0 100 42" preserveAspectRatio="none" aria-hidden="true">
       <defs>
-        <linearGradient id={`g${seed}`} x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor={`hsl(${hue} 42% 88%)`} />
           <stop offset="100%" stopColor={`hsl(${hue + 24} 38% 74%)`} />
         </linearGradient>
       </defs>
-      <rect width="100" height="42" fill={`url(#g${seed})`} />
+      <rect width="100" height="42" fill={`url(#${gid})`} />
       {shapes.map(([cx, cy, r], i) => (
         <circle
           key={i}

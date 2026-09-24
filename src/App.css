@@ -567,3 +567,22 @@
   font-size: 12px;
   color: var(--ink-2);
 }
+
+/* A long unbroken venue name pushed the availability badge outside the card,
+   hiding the one signal the card exists to show. Flex children default to
+   min-width:auto, so the text refused to shrink. */
+.card-top > div,
+.modal-head > div {
+  min-width: 0;
+}
+
+.card h2,
+.modal-head h2,
+.hood,
+.facts dd {
+  overflow-wrap: anywhere;
+}
+
+.spots {
+  flex-shrink: 0;
+}

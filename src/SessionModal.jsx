@@ -1,13 +1,31 @@
 import { useEffect, useRef } from "react";
 import SessionArt from "./SessionArt.jsx";
+import { fillRatio, spotsLeft } from "./App.jsx";
 
 export default function SessionModal({ session, index, label, clockTime, onClose }) {
   const panel = useRef(null);
-  const left = session.capacity - session.people_attending;
-  const pct = Math.round((session.people_attending / session.capacity) * 100);
+  const left = spotsLeft(session);
+  const pct = Math.round(fillRatio(session) * 100);
 
   useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && onClose();
+    const opener = document.activeElement;
+    const onKey = (e) => {
+      if (e.key === "Escape") return onClose();
+      if (e.key !== "Tab") return;
+      const focusable = panel.current?.querySelectorAll(
+        'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
     document.addEventListener("keydown", onKey);
     // Without this the page behind keeps scrolling under the dialog.
     const prev = document.body.style.overflow;
@@ -16,6 +34,7 @@ export default function SessionModal({ session, index, label, clockTime, onClose
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
+      if (opener instanceof HTMLElement) opener.focus();
     };
   }, [onClose]);
 
