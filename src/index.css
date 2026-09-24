@@ -1,8 +1,13 @@
+/* Dark values are declared under both scopes: the media query follows the OS,
+   the data-theme scope follows the in-app toggle. The :not() guard lets an
+   explicit light choice win over OS dark. */
+
 :root {
   color-scheme: light;
 
   --surface: #fcfcfb;
   --page: #f4f4f1;
+  --raised: #ffffff;
   --ink: #0b0b0b;
   --ink-2: #52514e;
   --border: #e2e1dc;
@@ -12,17 +17,20 @@
   --critical: #d03b3b;
   --critical-soft: #fbeaea;
 
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.04);
+
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
 
     --surface: #1a1a19;
     --page: #0d0d0d;
+    --raised: #232321;
     --ink: #ffffff;
     --ink-2: #c3c2b7;
     --border: #35342f;
@@ -31,7 +39,27 @@
     --accent-soft: #1d2a3a;
     --critical: #e66767;
     --critical-soft: #3a2020;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.25);
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface: #1a1a19;
+  --page: #0d0d0d;
+  --raised: #232321;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --border: #35342f;
+
+  --accent: #3987e5;
+  --accent-soft: #1d2a3a;
+  --critical: #e66767;
+  --critical-soft: #3a2020;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 *,
