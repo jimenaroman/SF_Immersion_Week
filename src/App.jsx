@@ -23,13 +23,21 @@ function clockTime(value) {
 
 // A session can be over-booked: the schema caps neither attendance at capacity
 // nor the ratio, so both are clamped before they reach a width or a count.
+// Math.max does not rescue NaN, so non-numeric input has to be coerced
+// before it reaches a clamp, a width or a headline total.
+function num(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export function fillRatio(s) {
-  if (!(s.capacity > 0)) return 0;
-  return Math.min(1, Math.max(0, s.people_attending / s.capacity));
+  const cap = num(s.capacity);
+  if (cap <= 0) return 0;
+  return Math.min(1, Math.max(0, num(s.people_attending) / cap));
 }
 
 export function spotsLeft(s) {
-  return Math.max(0, (s.capacity ?? 0) - (s.people_attending ?? 0));
+  return Math.max(0, num(s.capacity) - num(s.people_attending));
 }
 
 function useTheme() {
@@ -133,8 +141,8 @@ export default function App() {
   }, [all, filters, query, sort, tab]);
 
   const stats = useMemo(() => {
-    const seats = all.reduce((n, s) => n + Math.max(0, s.capacity ?? 0), 0);
-    const taken = all.reduce((n, s) => n + Math.min(s.people_attending ?? 0, s.capacity ?? 0), 0);
+    const seats = all.reduce((n, s) => n + Math.max(0, num(s.capacity)), 0);
+    const taken = all.reduce((n, s) => n + Math.max(0, Math.min(num(s.people_attending), num(s.capacity))), 0);
     return {
       open: Math.max(0, seats - taken),
       sessions: all.length,
