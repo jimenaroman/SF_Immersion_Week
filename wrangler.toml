@@ -5,6 +5,10 @@ name = "sf-immersion-week-redo"
 main = "worker/src/index.js"
 compatibility_date = "2024-11-01"
 
+# Credentials are set in the dashboard, not here. Without this, every deploy
+# deletes them first and the Worker starts with nothing set.
+keep_vars = true
+
 # The built React app. The Worker serves the API and the site from one
 # deployment, so there is no cross-origin call and no CORS to configure.
 [assets]
