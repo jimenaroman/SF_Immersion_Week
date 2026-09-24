@@ -1,7 +1,7 @@
 # Must match the Worker name in the Cloudflare dashboard. If these drift you
 # get two Workers: an empty one under the dashboard name, and the real app
 # deployed under this one.
-name = "sf-immersion-week"
+name = "sf-immersion-week-redo"
 main = "worker/src/index.js"
 compatibility_date = "2024-11-01"
 
