@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
-import SessionArt from "./SessionArt.jsx";
 import { fillRatio, spotsLeft } from "./App.jsx";
 
-export default function SessionModal({ session, index, label, clockTime, onClose }) {
+export default function SessionModal({ session, label, clockTime, onClose }) {
   const panel = useRef(null);
   const left = spotsLeft(session);
   const pct = Math.round(fillRatio(session) * 100);
@@ -56,7 +55,7 @@ export default function SessionModal({ session, index, label, clockTime, onClose
           ×
         </button>
 
-        <SessionArt activity={session.activity_label} seed={index} />
+        <div className="art" data-activity={session.activity_label} />
 
         <div className="modal-body">
           <header className="modal-head">

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchAllSessions } from "./supabase.js";
-import SessionArt from "./SessionArt.jsx";
 import SessionModal from "./SessionModal.jsx";
 import "./App.css";
 
@@ -318,7 +317,7 @@ export default function App() {
                       }
                     }}
                   >
-                    <SessionArt activity={s.activity_label} seed={i} />
+                    <div className="art" data-activity={s.activity_label} />
                     <div className="card-top">
                       <div>
                         <h2>{s.business_name}</h2>
@@ -359,7 +358,6 @@ export default function App() {
       {open && (
         <SessionModal
           session={open}
-          index={shown.findIndex((s) => s.id === open.id)}
           label={label}
           clockTime={clockTime}
           onClose={() => setOpen(null)}
