@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchMeta, fetchSessions } from "./supabase.js";
 import "./App.css";
 
 const FILTERS = [
@@ -31,28 +32,17 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/meta")
-      .then((r) => r.json())
-      .then((d) => (d.error ? setError(d.error) : setMeta(d)))
+    fetchMeta()
+      .then(setMeta)
       .catch((e) => setError(e.message));
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(filters)) {
-      if (value) params.set(key, value);
-    }
-    if (availableOnly) params.set("available", "true");
-
     setLoading(true);
-    fetch(`/api/sessions?${params}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) setError(d.error);
-        else {
-          setSessions(d.sessions);
-          setError(null);
-        }
+    fetchSessions({ ...filters, availableOnly })
+      .then((rows) => {
+        setSessions(rows);
+        setError(null);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
