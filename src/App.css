@@ -216,20 +216,29 @@
   color: var(--ink-2);
 }
 
+/* Solid rather than outlined: an outline plus --border made it identical to
+   the select boxes beside it, so the one action in the row read as another
+   field. Deliberately not the rust status colour, which means "full". */
 .reset {
   font: inherit;
   font-size: 14px;
-  padding: 8px 14px;
-  color: var(--ink-2);
-  background: none;
-  border: 1px solid var(--border);
+  font-weight: 560;
+  padding: 9px 16px;
+  color: var(--surface);
+  background: var(--ink);
+  border: 1px solid var(--ink);
   border-radius: 8px;
   cursor: pointer;
-  transition: color 0.15s;
+  transition: opacity 0.15s;
 }
 
 .reset:hover {
-  color: var(--ink);
+  opacity: 0.85;
+}
+
+.reset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .count {

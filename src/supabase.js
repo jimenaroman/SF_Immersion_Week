@@ -16,15 +16,28 @@ export async function fetchAllSessions() {
     order: "day_index.asc,time.asc",
   });
 
+  // Without a deadline a hung connection leaves the page on "Loading…"
+  // indefinitely, which is worse than a visible error the reader can retry.
   const res = await fetch(`${SUPABASE_URL}/rest/v1/sessions_public?${params}`, {
     headers: {
       apikey: SUPABASE_PUBLISHABLE_KEY,
       Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
     },
+    signal: AbortSignal.timeout(10000),
   });
 
   if (!res.ok) {
-    throw new Error(`Supabase ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    throw new Error(`Supabase returned ${res.status}. ${(await res.text()).slice(0, 160)}`);
   }
-  return res.json();
+
+  const rows = await res.json();
+  // An empty result is what a removed RLS read policy looks like — Supabase
+  // returns 200 with [] rather than an error, so it would otherwise render as
+  // a normal "no sessions" state and hide a broken database.
+  if (rows.length === 0) {
+    throw new Error(
+      "The database returned no sessions. The table may be empty, or the public read policy may be missing.",
+    );
+  }
+  return rows;
 }

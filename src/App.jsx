@@ -43,12 +43,22 @@ export default function App() {
   const [open, setOpen] = useState(null);
   const searchBox = useRef(null);
 
+  const [attempt, setAttempt] = useState(0);
+
   useEffect(() => {
+    setLoading(true);
+    setError(null);
     fetchAllSessions()
       .then(setAll)
-      .catch((e) => setError(e.message))
+      .catch((e) =>
+        setError(
+          e.name === "TimeoutError"
+            ? "Supabase did not respond within 10 seconds."
+            : e.message,
+        ),
+      )
       .finally(() => setLoading(false));
-  }, []);
+  }, [attempt]);
 
   useEffect(() => {
     const close = (e) => {
@@ -249,6 +259,9 @@ export default function App() {
         <div className="notice bad">
           <strong>Couldn&apos;t load sessions.</strong>
           <p>{error}</p>
+          <button className="reset" onClick={() => setAttempt((n) => n + 1)}>
+            Try again
+          </button>
         </div>
       ) : (
         <>
